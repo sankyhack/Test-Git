@@ -14,4 +14,4 @@ jobs:
     runs-on : ubuntu-latest
     steps:
       - name: Deplying on Prod
-      - run: echo 'Deploying to Prod'
+        run: echo 'Deploying to Prod'
