@@ -16,7 +16,6 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Run yamllint on Sigma Rules Directory (Standard Install)
-      # Yamllint is standard enough to run via pip install
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
@@ -24,26 +23,35 @@ jobs:
     - run: python3 -m yamllint --strict rules/
 
   translate_to_splunk:
-    name: 2. Translate to Splunk SPL (Docker Container Fix)
-    # CRITICAL FIX: Changed to the stable, working community image.
+    name: 2. Translate to Splunk SPL (Robust Docker Environment)
+    # CRITICAL FIX: Use a widely available, standard Linux Docker image (Falco's control plane image)
+    # and perform a clean installation of pySigma inside it.
     runs-on: ubuntu-latest
     needs: [lint_rules]
-    container: 'socprime/sigmacli:latest'
+    container: 'falcosecurity/falcoctl:latest'
     
     steps:
     - name: Checkout Repository
-      # Must check out the code inside the container environment
       uses: actions/checkout@v4
 
+    - name: Install pySigma and Backend inside Container
+      # The Falcoctl image is a clean environment; we install Python and pip first, 
+      # then install pySigma.
+      run: |
+        echo "Installing Python and pip inside the container..."
+        apk update && apk add python3 py3-pip
+        
+        echo "Installing pySigma dependencies..."
+        pip install "pysigma[cli]" pysigma-backend-splunk
+
     - name: Create Output Directory for Queries
-      # Directories are created inside the container
       run: mkdir -p queries/splunk
 
     - name: Run pySigma Conversion Script
-      # The 'sigma' command is the entry point in this container image.
+      # The 'pysigma' executable should now be functional and on the PATH inside the clean container.
       run: |
-        echo "Translating Sigma rules to Splunk SPL using Docker container..."
-        sigma convert \
+        echo "Translating Sigma rules to Splunk SPL using clean container environment..."
+        pysigma convert \
           --target splunk \
           --output-path queries/splunk \
           rules/
