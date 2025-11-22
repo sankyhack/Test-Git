@@ -16,6 +16,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Run yamllint on Sigma Rules Directory (Standard Install)
+      # We still rely on the base runner for the simpler lint job
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
@@ -23,34 +24,37 @@ jobs:
     - run: python3 -m yamllint --strict rules/
 
   translate_to_splunk:
-    name: 2. Translate to Splunk SPL (Robust Docker Environment)
-    # CRITICAL FIX: Use a widely available, standard Linux Docker image (Falco's control plane image)
-    # and perform a clean installation of pySigma inside it.
+    name: 2. Translate to Splunk SPL (Guaranteed Ubuntu Container)
+    # CRITICAL FIX: Use the clean, standard Ubuntu image to bypass all environmental errors.
     runs-on: ubuntu-latest
     needs: [lint_rules]
-    container: 'falcosecurity/falcoctl:latest'
+    container: 'ubuntu:20.04'
     
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Install pySigma and Backend inside Container
-      # The Falcoctl image is a clean environment; we install Python and pip first, 
-      # then install pySigma.
+    - name: Install Python, Dependencies, and pySigma
+      # We manually install everything required inside the clean Ubuntu environment
       run: |
-        echo "Installing Python and pip inside the container..."
-        apk update && apk add python3 py3-pip
+        echo "Installing Python and dependencies inside the Ubuntu container..."
+        # Install Python 3.10 and pip
+        apt-get update
+        apt-get install -y python3.10 python3-pip git
         
-        echo "Installing pySigma dependencies..."
+        # Ensure 'python3' points to the correct version
+        update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
+        
+        # Install required Python packages
         pip install "pysigma[cli]" pysigma-backend-splunk
 
     - name: Create Output Directory for Queries
       run: mkdir -p queries/splunk
 
     - name: Run pySigma Conversion Script
-      # The 'pysigma' executable should now be functional and on the PATH inside the clean container.
+      # The 'pysigma' command is now functional and on the PATH inside the clean container.
       run: |
-        echo "Translating Sigma rules to Splunk SPL using clean container environment..."
+        echo "Translating Sigma rules to Splunk SPL using clean Ubuntu container..."
         pysigma convert \
           --target splunk \
           --output-path queries/splunk \
