@@ -62,9 +62,18 @@ jobs:
         python3 -m venv venv
         # Use ./venv/bin/pip to ensure installation is isolated and targeted
         ./venv/bin/pip install -r requirements.txt
-        # Verification step: Confirm pysigma is installed
-        echo "Verification: Installed packages in venv:"
-        ./venv/bin/pip list | grep pysigma
+
+    - name: Diagnostic: Check Python Path and Installation
+      # NEW STEP: Forces the venv Python to print where it's looking for modules.
+      run: |
+        echo "--- VENV PYTHON PATH DIAGNOSTICS ---"
+        echo "Python Executable Path:"
+        which python3
+        echo "Venv Python Module Search Paths (sys.path):"
+        ./venv/bin/python3 -c 'import sys; print(sys.path)'
+        echo "Venv Installed Packages (pip freeze):"
+        ./venv/bin/pip freeze | grep -i sigma
+        echo "-------------------------------------"
         
     - name: Create Output Directory for Queries
       run: mkdir -p queries/splunk
