@@ -21,11 +21,9 @@ jobs:
         python-version: '3.10'
 
     - name: Install Dependencies
-      # We rely on pip install to handle dependencies from requirements.txt
       run: pip install -r requirements.txt
 
     - name: Run yamllint on Sigma Rules Directory
-      # Using the module runner for yamllint for consistency
       run: python3 -m yamllint --strict rules/
 
   translate_to_splunk:
@@ -51,9 +49,8 @@ jobs:
     - name: Run pySigma Conversion Script
       run: |
         echo "Translating Sigma rules to Splunk SPL..."
-        # FINAL ATTEMPT: Execute the command using the core 'sigma' package module.
-        # This bypasses the shell path and module name issues.
-        python3 -m sigma convert \
+        # FINAL ATTEMPT: Using the official module runner command from documentation.
+        python3 -m sigma.cli convert \
           --target splunk \
           --output-path queries/splunk \
           rules/
