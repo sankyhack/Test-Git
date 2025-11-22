@@ -53,7 +53,7 @@ jobs:
         python3 -m venv venv
         ./venv/bin/pip install -r requirements.txt
 
-    - name: Diagnostic: Check pySigma Installation
+    - name: Diagnostic Check pySigma Installation
       run: $GITHUB_WORKSPACE/venv/bin/pip freeze | grep -i sigma
         
     - name: Create Output Directory for Queries
