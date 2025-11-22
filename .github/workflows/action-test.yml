@@ -24,11 +24,10 @@ jobs:
         python-version: '3.10'
 
     - name: Install Python Dependencies
-      # We install yamllint and pySigma packages from requirements.txt
+      # FIX: Added --user flag to ensure executables like 'yamllint' are found in the PATH.
       run: |
         echo "Installing Python dependencies..."
-        # Note: This requires requirements.txt to be in the repository root
-        pip install -r requirements.txt
+        pip install --user -r requirements.txt
 
     - name: Run yamllint on Sigma Rules Directory
       # Linting is the first and fastest check. It ensures all rule files are valid YAML.
@@ -56,8 +55,8 @@ jobs:
     - name: Install Python Dependencies
       run: |
         echo "Installing Python dependencies..."
-        # Dependencies were defined in requirements.txt (including pySigma and backend)
-        pip install -r requirements.txt
+        # FIX: Added --user flag to ensure executables like 'pysigma' are found in the PATH.
+        pip install --user -r requirements.txt
         
     - name: Create Output Directory for Queries
       run: mkdir -p queries/splunk
