@@ -64,11 +64,12 @@ jobs:
       run: mkdir -p queries/splunk
 
     - name: Run pySigma Conversion Script
-      # FIX: We now execute the pysigma command using its full, calculated path 
-      # from the user's Python installation, guaranteeing it will be found.
+      # FIX: Executing pySigma as a Python module (python3 -m pysigma) is the most
+      # robust method in CI, as it bypasses shell PATH issues entirely and guarantees 
+      # the correct interpreter is used.
       run: |
         echo "Translating Sigma rules to Splunk SPL..."
-        $(python3 -m site --user-base)/bin/pysigma convert \
+        python3 -m pysigma convert \
           --target splunk \
           --output-path queries/splunk \
           rules/
