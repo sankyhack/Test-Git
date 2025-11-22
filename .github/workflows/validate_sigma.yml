@@ -21,7 +21,6 @@ jobs:
         python-version: '3.10'
 
     - name: Install Dependencies
-      # We skip all complex pySigma installation and install dependencies only
       run: pip install yamllint pysigma-backend-splunk
 
     - name: Run yamllint on Sigma Rules Directory
@@ -44,9 +43,8 @@ jobs:
     - name: Install Dependencies
       run: pip install pysigma-backend-splunk
 
-    - name: Install pySigma from Source (CRITICAL FIX)
-      # 1. Clone the core pySigma repository from GitHub
-      # 2. Install the package directly from the local source directory using the [cli] extra
+    - name: Install pySigma from Source
+      # Install the package directly from the local source directory using the [cli] extra
       run: |
         echo "Installing pySigma from source repository..."
         git clone https://github.com/SigmaHQ/pySigma.git /tmp/pysigma_src
@@ -55,11 +53,26 @@ jobs:
     - name: Create Output Directory for Queries
       run: mkdir -p queries/splunk
 
-    - name: Run pySigma Conversion Script
+    - name: Run pySigma Conversion Script (Locate and Execute)
       run: |
-        echo "Translating Sigma rules to Splunk SPL..."
-        # Using the official module runner command which should now work with the source install
-        python3 -m sigma.cli convert \
+        echo "Attempting to locate and execute 'pysigma' binary..."
+        
+        # CRITICAL FIX: Find the executable path within the installation folder.
+        # We search inside the default location for pip-installed binaries.
+        PY_BIN_PATH=$(python3 -c 'import site; print(site.getusersitepackages()[0])')
+        
+        # We search inside the Python installation paths for the 'pysigma' executable.
+        PYSIGMA_EXEC=$(find /opt/hostedtoolcache/Python -name pysigma -type f -perm /111 -print -quit)
+        
+        if [ -z "$PYSIGMA_EXEC" ]; then
+          echo "ERROR: Could not find the pysigma executable anywhere on the standard path."
+          exit 1
+        fi
+        
+        echo "Found executable at: $PYSIGMA_EXEC"
+        
+        # Execute the file using its absolute path.
+        "$PYSIGMA_EXEC" convert \
           --target splunk \
           --output-path queries/splunk \
           rules/
