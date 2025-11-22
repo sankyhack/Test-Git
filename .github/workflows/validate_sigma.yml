@@ -15,7 +15,7 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Run yamllint on Sigma Rules Directory (Simplified)
+    - name: Run yamllint on Sigma Rules Directory (Standard Install)
       # Yamllint is standard enough to run via pip install
       uses: actions/setup-python@v4
       with:
@@ -25,10 +25,10 @@ jobs:
 
   translate_to_splunk:
     name: 2. Translate to Splunk SPL (Docker Container Fix)
-    # We define the job to run inside the official Sigma Docker image
+    # CRITICAL FIX: Changed to the stable, working community image.
     runs-on: ubuntu-latest
     needs: [lint_rules]
-    container: 'ghcr.io/sigmanet/sigma:latest'
+    container: 'socprime/sigmacli:latest'
     
     steps:
     - name: Checkout Repository
@@ -40,11 +40,10 @@ jobs:
       run: mkdir -p queries/splunk
 
     - name: Run pySigma Conversion Script
-      # The 'pysigma' command is now guaranteed to be on the PATH and functional
-      # because it's baked into the Docker image.
+      # The 'sigma' command is the entry point in this container image.
       run: |
         echo "Translating Sigma rules to Splunk SPL using Docker container..."
-        pysigma convert \
+        sigma convert \
           --target splunk \
           --output-path queries/splunk \
           rules/
