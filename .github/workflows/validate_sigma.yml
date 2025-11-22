@@ -1,6 +1,5 @@
 name: Detection Rule Validation Pipeline
 
-# The 'on' block defines the trigger events for this workflow.
 on:
   push:
     branches: [ "main" ]
@@ -54,7 +53,7 @@ jobs:
         python3 -m venv venv
         ./venv/bin/pip install -r requirements.txt
 
-    - name: Diagnostic: Check pySigma Installation
+    - name: Diagnostic Check pySigma Installation
       run: ./venv/bin/pip freeze | grep -i sigma
         
     - name: Create Output Directory for Queries
