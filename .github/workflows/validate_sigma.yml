@@ -16,22 +16,18 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Set up Python Environment
+      # FIX: We rely on this action to set up the path correctly.
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
 
     - name: Install Python Dependencies
-      run: |
-        echo "Creating and installing dependencies into venv..."
-        python3 -m venv venv
-        ./venv/bin/pip install -r requirements.txt
-        echo "Verification: Installed packages in venv:"
-        ./venv/bin/pip list | grep sigma
+      # We install directly into the environment managed by setup-python.
+      run: pip install -r requirements.txt
 
     - name: Run yamllint on Sigma Rules Directory
-      run: |
-        echo "Running yamllint across the 'rules/' directory..."
-        $GITHUB_WORKSPACE/venv/bin/yamllint --strict rules/
+      # yamllint is now directly callable.
+      run: yamllint --strict rules/
 
   translate_to_splunk:
     name: 2. Translate to Splunk SPL
@@ -48,21 +44,19 @@ jobs:
         python-version: '3.10'
 
     - name: Install Python Dependencies
-      run: |
-        echo "Creating and installing dependencies into venv..."
-        python3 -m venv venv
-        ./venv/bin/pip install -r requirements.txt
+      run: pip install -r requirements.txt
 
     - name: Diagnostic Check pySigma Installation
-      run: $GITHUB_WORKSPACE/venv/bin/pip freeze | grep -i sigma
+      run: pip list | grep -i sigma
         
     - name: Create Output Directory for Queries
       run: mkdir -p queries/splunk
 
     - name: Run pySigma Conversion Script
+      # FIX: pysigma is now directly callable, resolving all path errors.
       run: |
         echo "Translating Sigma rules to Splunk SPL..."
-        $GITHUB_WORKSPACE/venv/bin/pysigma convert \
+        pysigma convert \
           --target splunk \
           --output-path queries/splunk \
           rules/
@@ -73,4 +67,3 @@ jobs:
         name: splunk-detection-queries
         path: queries/splunk/
         retention-days: 7
----
