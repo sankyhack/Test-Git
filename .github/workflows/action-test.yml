@@ -1,17 +1,38 @@
-name: Check Branch Name
-on: [push]
+name: Detection Rule Validation Pipeline
+
+# The 'on' block defines the trigger events for this workflow.
+on:
+  push:
+    branches: [ "main" ] # Runs when code is pushed directly to the main branch
+  pull_request:
+    branches: [ "main" ] # Runs when a Pull Request targets the main branch
 
 jobs:
-  branch_name:
-    runs-on: ubuntu-latest
+  lint_rules:
+    name: 1. Validate Rule Syntax
+    runs-on: ubuntu-latest # The type of virtual machine environment to run on
+    
     steps:
-      - uses: actions/checkout@v3
-      - name: Branch Name
-        run : |
-            echo ' The name of branch is test ' ${{ github.ref_name }}
-  deploy:
-    needs: branch_name
-    runs-on : ubuntu-latest
-    steps:
-      - name: Deplying on Prod
-        run: echo 'Deploying to Prod'
+    - name: Checkout Repository
+      # This action brings your code from GitHub into the worker environment
+      uses: actions/checkout@v4
+
+    - name: Set up Python Environment
+      # This action sets up the Python version required for our tools
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install Python Dependencies
+      # We install yamllint and pySigma packages from requirements.txt
+      run: |
+        echo "Installing Python dependencies..."
+        # Note: This requires requirements.txt to be in the repository root
+        pip install -r requirements.txt
+
+    - name: Run yamllint on Sigma Rules Directory
+      # Linting is the first and fastest check. It ensures all rule files are valid YAML.
+      # If this fails, the pipeline stops immediately.
+      run: |
+        echo "Running yamllint across the 'rules/' directory..."
+        yamllint rules/
