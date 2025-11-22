@@ -24,16 +24,15 @@ jobs:
         python-version: '3.10'
 
     - name: Install Python Dependencies and Update PATH
-      # FIX: Install packages with --user and explicitly add the resulting binary path to GITHUB_PATH
+      # This step is critical for executables like 'yamllint' and 'pysigma' to be found.
       run: |
         echo "Installing Python dependencies..."
         pip install --user -r requirements.txt
-        # Explicitly add the user's local binary directory to the PATH so yamllint is found.
+        # Explicitly add the user's local binary directory to the PATH.
         echo "$(python3 -m site --user-base)/bin" >> $GITHUB_PATH
 
     - name: Run yamllint on Sigma Rules Directory
       # Linting is the first and fastest check. It ensures all rule files are valid YAML.
-      # If this fails, the pipeline stops immediately.
       run: |
         echo "Running yamllint across the 'rules/' directory..."
         # We use the '--strict' flag to enforce best practices
@@ -58,19 +57,18 @@ jobs:
       run: |
         echo "Installing Python dependencies..."
         pip install --user -r requirements.txt
-        # Explicitly add the user's local binary directory to the PATH so pysigma is found.
+        # Explicitly add the user's local binary directory to the PATH (kept for general robustness).
         echo "$(python3 -m site --user-base)/bin" >> $GITHUB_PATH
         
     - name: Create Output Directory for Queries
       run: mkdir -p queries/splunk
 
     - name: Run pySigma Conversion Script
-      # We execute a command-line script using pySigma's built-in CLI tool.
-      # This converts all rules in 'rules/' using the Splunk backend and saves them
-      # to individual files in the 'queries/splunk' directory.
+      # FIX: We now execute the tool via the Python module runner (python3 -m sigma.cli) 
+      # to ensure it's found, bypassing the 'pysigma: command not found' error.
       run: |
         echo "Translating Sigma rules to Splunk SPL..."
-        pysigma convert \
+        python3 -m sigma.cli convert \
           --target splunk \
           --output-path queries/splunk \
           rules/
