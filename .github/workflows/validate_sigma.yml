@@ -24,7 +24,6 @@ jobs:
         python-version: '3.10'
 
     - name: Install Python Dependencies
-      # Explicitly use the venv's pip executable for installation.
       run: |
         echo "Creating and installing dependencies into venv..."
         python3 -m venv venv
@@ -35,7 +34,6 @@ jobs:
 
     - name: Run yamllint on Sigma Rules Directory
       run: |
-        # Continue to use the explicit venv executable path
         echo "Running yamllint across the 'rules/' directory..."
         ./venv/bin/yamllint --strict rules/
 
@@ -55,7 +53,6 @@ jobs:
         python-version: '3.10'
 
     - name: Install Python Dependencies
-      # Explicitly use the venv's pip executable for installation.
       run: |
         echo "Creating and installing dependencies into venv..."
         python3 -m venv venv
@@ -78,7 +75,6 @@ jobs:
 
     - name: Run pySigma Conversion Script
       run: |
-        # Continue to use the explicit venv executable path
         echo "Translating Sigma rules to Splunk SPL..."
         ./venv/bin/python3 -m pysigma convert \
           --target splunk \
