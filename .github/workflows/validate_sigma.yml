@@ -31,7 +31,7 @@ jobs:
     - name: Run yamllint on Sigma Rules Directory
       run: |
         echo "Running yamllint across the 'rules/' directory..."
-        ./venv/bin/yamllint --strict rules/
+        $GITHUB_WORKSPACE/venv/bin/yamllint --strict rules/
 
   translate_to_splunk:
     name: 2. Translate to Splunk SPL
@@ -53,8 +53,8 @@ jobs:
         python3 -m venv venv
         ./venv/bin/pip install -r requirements.txt
 
-    - name: Diagnostic Check pySigma Installation
-      run: ./venv/bin/pip freeze | grep -i sigma
+    - name: Diagnostic: Check pySigma Installation
+      run: $GITHUB_WORKSPACE/venv/bin/pip freeze | grep -i sigma
         
     - name: Create Output Directory for Queries
       run: mkdir -p queries/splunk
@@ -62,7 +62,7 @@ jobs:
     - name: Run pySigma Conversion Script
       run: |
         echo "Translating Sigma rules to Splunk SPL..."
-        ./venv/bin/pysigma convert \
+        $GITHUB_WORKSPACE/venv/bin/pysigma convert \
           --target splunk \
           --output-path queries/splunk \
           rules/
