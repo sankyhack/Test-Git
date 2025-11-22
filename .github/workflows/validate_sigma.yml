@@ -20,16 +20,12 @@ jobs:
       with:
         python-version: '3.10'
 
-    - name: Configure PATH and Install Dependencies
-      run: |
-        # CRITICAL FIX: Explicitly add the user-installed binary path to the GitHub PATH variable.
-        # This guarantees executables like 'pysigma' and 'yamllint' are found.
-        echo "$(python3 -m site --user-base)/bin" >> $GITHUB_PATH
-        pip install -r requirements.txt
+    - name: Install Dependencies
+      run: pip install -r requirements.txt
 
     - name: Run yamllint on Sigma Rules Directory
-      # yamllint is now callable
-      run: yamllint --strict rules/
+      # FIX: Use the Python module runner for yamllint as well, for consistency
+      run: python3 -m yamllint --strict rules/
 
   translate_to_splunk:
     name: 2. Translate to Splunk SPL
@@ -45,26 +41,21 @@ jobs:
       with:
         python-version: '3.10'
 
-    - name: Configure PATH and Install Dependencies
-      run: |
-        # CRITICAL FIX: Repeat PATH configuration for this job.
-        echo "$(python3 -m site --user-base)/bin" >> $GITHUB_PATH
-        pip install -r requirements.txt
-
-    - name: Diagnostic Check pySigma Installation
-      run: pip list | grep -i sigma
-        
-    - name: Create Output Directory for Queries
-      run: mkdir -p queries/splunk
+    - name: Install Dependencies
+      run: pip install -r requirements.txt
 
     - name: Run pySigma Conversion Script
-      # pysigma is now callable due to the PATH fix.
       run: |
         echo "Translating Sigma rules to Splunk SPL..."
-        pysigma convert \
+        # FINAL, ABSOLUTE FIX: Execute pysigma as a module directly through python3.
+        # This completely bypasses the shell's PATH and executable search.
+        python3 -m sigma.cli convert \
           --target splunk \
           --output-path queries/splunk \
           rules/
+
+    - name: Create Output Directory for Queries
+      run: mkdir -p queries/splunk
 
     - name: Upload Translated Queries as Artifact
       uses: actions/upload-artifact@v4
