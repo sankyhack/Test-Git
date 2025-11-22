@@ -1,0 +1,18 @@
+title: Suspicious File Creation
+id: 591a27e7-38e2-45e3-a7ef-8d18448f76d4
+status: experimental
+description: Detects when a new file is created in a high-risk directory.
+author: Security Architect
+date: 2024/11/11
+logsource:
+    category: file_event
+    product: windows
+detection:
+    selection:
+        TargetFilename|endswith:
+            - '\System32\config.ini'
+            - '\Windows\Temp\payload.exe'
+    condition: selection
+falsepositives:
+    - Administrator activity
+level: high
