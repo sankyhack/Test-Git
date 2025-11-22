@@ -1,4 +1,4 @@
-title Suspicious File Creation
+title: Suspicious File Creation
 id: 591a27e7-38e2-45e3-a7ef-8d18448f76d4
 status: experimental
 description: Detects when a new file is created in a high-risk directory.
