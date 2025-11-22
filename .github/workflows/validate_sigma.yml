@@ -58,18 +58,10 @@ jobs:
         python3 -m venv venv
         ./venv/bin/pip install -r requirements.txt
 
-    - name: Diagnostic: Check Python Path and Installation
-      # Forces the venv Python to print where it's looking for modules.
-      run: |
-        echo "--- VENV PYTHON PATH DIAGNOSTICS ---"
-        echo "Python Executable Path:"
-        which python3
-        echo "Venv Python Module Search Paths (sys.path):"
-        ./venv/bin/python3 -c 'import sys; print(sys.path)'
-        echo "Venv Installed Packages (pip freeze):"
-        ./venv/bin/pip freeze | grep -i sigma
-        echo "-------------------------------------"
-        
+    - name: Diagnostic Check pySigma Installation Path
+      # Simplified step to avoid multi-line YAML parsing issues around line 61
+      run: ./venv/bin/pip freeze | grep -i sigma
+
     - name: Create Output Directory for Queries
       run: mkdir -p queries/splunk
 
