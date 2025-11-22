@@ -25,20 +25,18 @@ jobs:
 
     - name: Install Python Dependencies
       # Create and install dependencies into a virtual environment (venv)
-      # This is the most reliable way to ensure the interpreter finds the modules.
       run: |
         echo "Creating and installing dependencies into venv..."
         python3 -m venv venv
+        # Activate momentarily to ensure pip install uses the venv pip
         source venv/bin/activate
         pip install -r requirements.txt
 
     - name: Run yamllint on Sigma Rules Directory
-      # Activate venv before running the executable to ensure it is in the PATH
+      # FIX: Explicitly call the executable path inside the venv to guarantee discovery.
       run: |
-        source venv/bin/activate
         echo "Running yamllint across the 'rules/' directory..."
-        # We use the '--strict' flag to enforce best practices
-        yamllint --strict rules/
+        ./venv/bin/yamllint --strict rules/
 
   # --- NEW JOB: Translate Sigma Rules ---
   translate_to_splunk:
@@ -60,6 +58,7 @@ jobs:
       run: |
         echo "Creating and installing dependencies into venv..."
         python3 -m venv venv
+        # Activate momentarily to ensure pip install uses the venv pip
         source venv/bin/activate
         pip install -r requirements.txt
         
@@ -67,13 +66,11 @@ jobs:
       run: mkdir -p queries/splunk
 
     - name: Run pySigma Conversion Script
-      # Activate venv and run the module
+      # FIX: Explicitly call the venv's Python interpreter to run the pysigma module.
+      # This is the most reliable method for CI/CD environments.
       run: |
-        source venv/bin/activate
         echo "Translating Sigma rules to Splunk SPL..."
-        # Using 'python3 -m pysigma' is the most robust execution method, 
-        # now guaranteed to find the module inside the active venv.
-        python3 -m pysigma convert \
+        ./venv/bin/python3 -m pysigma convert \
           --target splunk \
           --output-path queries/splunk \
           rules/
