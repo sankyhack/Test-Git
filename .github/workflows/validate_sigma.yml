@@ -16,17 +16,19 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Set up Python Environment
-      # FIX: We rely on this action to set up the path correctly.
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
 
-    - name: Install Python Dependencies
-      # We install directly into the environment managed by setup-python.
-      run: pip install -r requirements.txt
+    - name: Configure PATH and Install Dependencies
+      run: |
+        # CRITICAL FIX: Explicitly add the user-installed binary path to the GitHub PATH variable.
+        # This guarantees executables like 'pysigma' and 'yamllint' are found.
+        echo "$(python3 -m site --user-base)/bin" >> $GITHUB_PATH
+        pip install -r requirements.txt
 
     - name: Run yamllint on Sigma Rules Directory
-      # yamllint is now directly callable.
+      # yamllint is now callable
       run: yamllint --strict rules/
 
   translate_to_splunk:
@@ -43,8 +45,11 @@ jobs:
       with:
         python-version: '3.10'
 
-    - name: Install Python Dependencies
-      run: pip install -r requirements.txt
+    - name: Configure PATH and Install Dependencies
+      run: |
+        # CRITICAL FIX: Repeat PATH configuration for this job.
+        echo "$(python3 -m site --user-base)/bin" >> $GITHUB_PATH
+        pip install -r requirements.txt
 
     - name: Diagnostic Check pySigma Installation
       run: pip list | grep -i sigma
@@ -53,7 +58,7 @@ jobs:
       run: mkdir -p queries/splunk
 
     - name: Run pySigma Conversion Script
-      # FIX: pysigma is now directly callable, resolving all path errors.
+      # pysigma is now callable due to the PATH fix.
       run: |
         echo "Translating Sigma rules to Splunk SPL..."
         pysigma convert \
