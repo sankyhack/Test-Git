@@ -57,18 +57,18 @@ jobs:
       run: |
         echo "Installing Python dependencies..."
         pip install --user -r requirements.txt
-        # Explicitly add the user's local binary directory to the PATH (kept for general robustness).
+        # Explicitly add the user's local binary directory to the PATH.
         echo "$(python3 -m site --user-base)/bin" >> $GITHUB_PATH
         
     - name: Create Output Directory for Queries
       run: mkdir -p queries/splunk
 
     - name: Run pySigma Conversion Script
-      # FIX: We now execute the tool via the Python module runner (python3 -m sigma.cli) 
-      # to ensure it's found, bypassing the 'pysigma: command not found' error.
+      # FIX: Reverting to the correct executable name 'pysigma' after confirming 
+      # that the PATH injection makes it accessible and the previous module name was wrong.
       run: |
         echo "Translating Sigma rules to Splunk SPL..."
-        python3 -m sigma.cli convert \
+        pysigma convert \
           --target splunk \
           --output-path queries/splunk \
           rules/
