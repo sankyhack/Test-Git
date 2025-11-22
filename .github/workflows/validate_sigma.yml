@@ -43,8 +43,8 @@ jobs:
     - name: Install Dependencies
       run: pip install pysigma-backend-splunk
 
-    - name: Install pySigma from Source
-      # Install the package directly from the local source directory using the [cli] extra
+    - name: Install pySigma from Source (Guaranteed Build)
+      # Clone the pySigma repository and install the package from the local source directory.
       run: |
         echo "Installing pySigma from source repository..."
         git clone https://github.com/SigmaHQ/pySigma.git /tmp/pysigma_src
@@ -57,11 +57,8 @@ jobs:
       run: |
         echo "Attempting to locate and execute 'pysigma' binary..."
         
-        # CRITICAL FIX: Find the executable path within the installation folder.
-        # We search inside the default location for pip-installed binaries.
-        PY_BIN_PATH=$(python3 -c 'import site; print(site.getusersitepackages()[0])')
-        
-        # We search inside the Python installation paths for the 'pysigma' executable.
+        # CRITICAL FIX: Find the executable file ('pysigma') anywhere in the tool cache
+        # and store its absolute path in the PYSIGMA_EXEC variable.
         PYSIGMA_EXEC=$(find /opt/hostedtoolcache/Python -name pysigma -type f -perm /111 -print -quit)
         
         if [ -z "$PYSIGMA_EXEC" ]; then
