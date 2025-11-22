@@ -64,11 +64,11 @@ jobs:
       run: mkdir -p queries/splunk
 
     - name: Run pySigma Conversion Script
-      # FIX: Reverting to the correct executable name 'pysigma' after confirming 
-      # that the PATH injection makes it accessible and the previous module name was wrong.
+      # FIX: We now execute the pysigma command using its full, calculated path 
+      # from the user's Python installation, guaranteeing it will be found.
       run: |
         echo "Translating Sigma rules to Splunk SPL..."
-        pysigma convert \
+        $(python3 -m site --user-base)/bin/pysigma convert \
           --target splunk \
           --output-path queries/splunk \
           rules/
