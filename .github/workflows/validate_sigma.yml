@@ -24,19 +24,18 @@ jobs:
         python-version: '3.10'
 
     - name: Install Python Dependencies
-      # FIX: Explicitly use the venv's pip executable for installation.
+      # Explicitly use the venv's pip executable for installation.
       run: |
         echo "Creating and installing dependencies into venv..."
         python3 -m venv venv
-        # Use ./venv/bin/pip to ensure installation is isolated and targeted
         ./venv/bin/pip install -r requirements.txt
         # Verification step: Confirm pysigma is installed
         echo "Verification: Installed packages in venv:"
         ./venv/bin/pip list | grep pysigma
 
     - name: Run yamllint on Sigma Rules Directory
-      # Continue to use the explicit venv executable path
       run: |
+        # Continue to use the explicit venv executable path
         echo "Running yamllint across the 'rules/' directory..."
         ./venv/bin/yamllint --strict rules/
 
@@ -56,15 +55,14 @@ jobs:
         python-version: '3.10'
 
     - name: Install Python Dependencies
-      # FIX: Explicitly use the venv's pip executable for installation.
+      # Explicitly use the venv's pip executable for installation.
       run: |
         echo "Creating and installing dependencies into venv..."
         python3 -m venv venv
-        # Use ./venv/bin/pip to ensure installation is isolated and targeted
         ./venv/bin/pip install -r requirements.txt
 
     - name: Diagnostic: Check Python Path and Installation
-      # NEW STEP: Forces the venv Python to print where it's looking for modules.
+      # Forces the venv Python to print where it's looking for modules.
       run: |
         echo "--- VENV PYTHON PATH DIAGNOSTICS ---"
         echo "Python Executable Path:"
@@ -79,8 +77,8 @@ jobs:
       run: mkdir -p queries/splunk
 
     - name: Run pySigma Conversion Script
-      # Continue to use the explicit venv executable path
       run: |
+        # Continue to use the explicit venv executable path
         echo "Translating Sigma rules to Splunk SPL..."
         ./venv/bin/python3 -m pysigma convert \
           --target splunk \
